@@ -21,13 +21,14 @@
             socketId = pusher.connection.socket_id;
         });
     
-    
+     function updatePostStats() {
+            location.reload();
+        };
         var channel = pusher.subscribe('post-events');
         channel.bind('postAction', function(data) {
             // log message data to console - for debugging purposes
             console.log(data);
-            var action = data.action;
-            updatePostStats[action](data.postId);
+            updatePostStats(data.postId);
         });
     </script>
     <style>
@@ -42,23 +43,7 @@
     <div class="container-fluid text-center">
     
         {{#each posts }}
-        <script>
-            var id = '{{ this.id }}'
-            var storage = localStorage.getItem(id);
-            if (id == "true") {
-                console.log(id + "is true")
-                button.textContent = "thumb_up";
-                 button.classList.add("material-icons-outlined");
-                button.classList.remove("material-icons");
-            } else if (id == "false") {
-                console.log( id + " is false")
-                button.textContent = "thumb_up_alt";
-                button.classList.remove("material-icons-outlined");
-                button.classList.add("material-icons");
-            } else {
-                console.log( id + " has no value")
-            }
-            </script>
+        
             <div class="jumbotron">
                 
     
@@ -71,23 +56,36 @@
                     <span id="icon" class="material-icons-outlined"onclick="actOnPost(event);"
                             data-post-id="{{ this.id }}">thumb_up
                     </span>
+                    
                     <span id="likes-count-{{ this.id }}">{{ this.likes_count }}</span>
                 </div>
             </div>
-            
+            <script>
+            var id = '{{ this.id }}'
+            var storage = localStorage.getItem(id);
+            var button = document.getElementById("icon");
+            if (storage == "true") {
+                console.log(id + " is true")
+                button.textContent = "thumb_up_alt";
+                button.classList.remove("material-icons-outlined");
+                button.classList.add("material-icons");
+                
+            } else if (storage == "false") {
+                console.log( id + " is false")
+                button.textContent = "thumb_up";
+                 button.classList.add("material-icons-outlined");
+                button.classList.remove("material-icons");
+            } else {
+                console.log( id + " has no value")
+            }
+             
+            </script>
         {{/each}}
     
     </div>
     <script>
-        var updatePostStats = {
-            thumb_up: function (postId) {
-                document.querySelector('#likes-count-' + postId).textContent++;
-            },
-            thumb_up_alt: function(postId) {
-                document.querySelector('#likes-count-' + postId).textContent--;
-            }
-        };
-    
+       
+   
         var toggleButtonText = {
             thumb_up: function(button) {
                 button.textContent = "thumb_up_alt";

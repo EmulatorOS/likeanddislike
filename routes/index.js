@@ -22,7 +22,7 @@ const pusher = new Pusher({
     
     router.post('/posts/:id/act', (req, res) => {
         const action = req.body.action;
-        const counter = action ? 1 : -1;
+        const counter = action === 'thumb_up' ? 1 : -1;
         Post.updateMany({_id: req.params.id}, {$inc: {likes_count: counter}}, {}, (err, numberAffected) => {
             pusher.trigger('post-events', 'postAction', { action: action, postId: req.params.id }, req.body.socketId);
             
