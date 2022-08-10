@@ -4,11 +4,16 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
          <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
     
     <script>
-        var pusher = new Pusher('832e9dbd688fbc7eaf55', {
-            cluster: 'us2'
-        });
+
+    var pusher = new Pusher('832e9dbd688fbc7eaf55', {
+      cluster: 'us2'
+    });
+
+    
+        
         var socketId;
     
         // retrieve the socket ID on successful connection
@@ -25,6 +30,11 @@
             updatePostStats[action](data.postId);
         });
     </script>
+    <style>
+        #icon {
+            cursor: pointer;
+        }
+    </style>
     </head>
     
     <body>
@@ -32,43 +42,83 @@
     <div class="container-fluid text-center">
     
         {{#each posts }}
+        <script>
+            var id = '{{ this.id }}'
+            var storage = localStorage.getItem(id);
+            if (id == "true") {
+                console.log(id + "is true")
+                button.textContent = "thumb_up";
+                 button.classList.add("material-icons-outlined");
+                button.classList.remove("material-icons");
+            } else if (id == "false") {
+                console.log( id + " is false")
+                button.textContent = "thumb_up_alt";
+                button.classList.remove("material-icons-outlined");
+                button.classList.add("material-icons");
+            } else {
+                console.log( id + " has no value")
+            }
+            </script>
             <div class="jumbotron">
-                <div>by
-                    <b>{{ this.author.name  }}</b>
-                    on
-                    <small>{{ this.posted_at }}</small>
-                </div>
+                
     
                 <div>
-                    <p>{{ this.text }}</p>
+                    <p>{{ this.src }}</p>
+                    <img src="{{ this.src }}"></img>
                 </div>
     
                 <div class="row">
-                    <button onclick="actOnPost(event);"
-                            data-post-id="{{ this.id }}">Like
-                    </button>
+                    <span id="icon" class="material-icons-outlined"onclick="actOnPost(event);"
+                            data-post-id="{{ this.id }}">thumb_up
+                    </span>
                     <span id="likes-count-{{ this.id }}">{{ this.likes_count }}</span>
                 </div>
             </div>
+            
         {{/each}}
     
     </div>
     <script>
         var updatePostStats = {
-            Like: function (postId) {
+            thumb_up: function (postId) {
                 document.querySelector('#likes-count-' + postId).textContent++;
             },
-            Unlike: function(postId) {
+            thumb_up_alt: function(postId) {
                 document.querySelector('#likes-count-' + postId).textContent--;
             }
         };
     
         var toggleButtonText = {
-            Like: function(button) {
-                button.textContent = "Unlike";
+            thumb_up: function(button) {
+                button.textContent = "thumb_up_alt";
             },
-            Unlike: function(button) {
-                button.textContent = "Like";
+            thumb_up_alt: function(button) {
+                button.textContent = "thumb_up";
+            }
+        };
+        var toggleButtonClass = {
+            thumb_up: function(button) {
+                
+                button.classList.remove("material-icons-outlined");
+                button.classList.add("material-icons");
+            },
+            thumb_up_alt: function(button) {
+                
+
+                button.classList.add("material-icons-outlined");
+                button.classList.remove("material-icons");
+            }
+        };
+        var toggleLocalStorage = {
+            thumb_up: function(postId) {
+                 console.log(postId)
+                 localStorage.setItem(postId, 'true');
+
+              
+            },
+            thumb_up_alt: function(postId) {
+                 console.log(postId)
+                 localStorage.setItem(postId, 'false');
             }
         };
     
@@ -76,9 +126,17 @@
             var postId = event.target.dataset.postId;
             var action = event.target.textContent.trim();
             toggleButtonText[action](event.target);
-            updatePostStats[action](postId);
-            axios.post('/posts/' + postId + '/act', { action: action });
+            toggleButtonClass[action](event.target);
+            toggleLocalStorage[action](postId);
+            axios.post('/posts/' + postId + '/act', { action: action })
+            .then(function (response) {
+    console.log(response);
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
         };
+        
     </script>
     </body>
     </html>

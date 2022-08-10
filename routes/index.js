@@ -9,21 +9,27 @@ let router = require('express').Router();
     
     });
     
-    let Pusher = require('pusher');
-    let pusher = new Pusher({
-      appId: process.env.PUSHER_APP_ID,
-      key: process.env.PUSHER_APP_KEY,
-      secret: process.env.PUSHER_APP_SECRET,
-      cluster: process.env.PUSHER_APP_CLUSTER
-    });
+    const Pusher = require("pusher");
+
+const pusher = new Pusher({
+  appId: "1460506",
+  key: "832e9dbd688fbc7eaf55",
+  secret: "6a95795d7ff0fe833598",
+  cluster: "us2",
+  useTLS: true
+});
+
     
-    router.post('/posts/:id/act', (req, res, next) => {
+    router.post('/posts/:id/act', (req, res) => {
         const action = req.body.action;
-        const counter = action === 'Like' ? 1 : -1;
+        const counter = action ? 1 : -1;
         Post.updateMany({_id: req.params.id}, {$inc: {likes_count: counter}}, {}, (err, numberAffected) => {
             pusher.trigger('post-events', 'postAction', { action: action, postId: req.params.id }, req.body.socketId);
             
+            
         });
+        
+        
     });
     
     module.exports = router;

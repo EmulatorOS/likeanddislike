@@ -1,11 +1,8 @@
 let mongoose = require('mongoose');
     
 let Post = mongoose.model('Post', {
-    text: String,
-    posted_at: Date,
-    likes_count: Number,
-    author: String
+    src: String,
+    likes_count: Number
 });
 
 module.exports = Post;
-console.log(Post)
