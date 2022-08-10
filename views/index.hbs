@@ -1,0 +1,84 @@
+ <!DOCTYPE html>
+    <html>
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+         <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    
+    <script>
+        var pusher = new Pusher('832e9dbd688fbc7eaf55', {
+            cluster: 'us2'
+        });
+        var socketId;
+    
+        // retrieve the socket ID on successful connection
+        pusher.connection.bind('connected', function() {
+            socketId = pusher.connection.socket_id;
+        });
+    
+    
+        var channel = pusher.subscribe('post-events');
+        channel.bind('postAction', function(data) {
+            // log message data to console - for debugging purposes
+            console.log(data);
+            var action = data.action;
+            updatePostStats[action](data.postId);
+        });
+    </script>
+    </head>
+    
+    <body>
+    
+    <div class="container-fluid text-center">
+    
+        {{#each posts }}
+            <div class="jumbotron">
+                <div>by
+                    <b>{{ this.author.name  }}</b>
+                    on
+                    <small>{{ this.posted_at }}</small>
+                </div>
+    
+                <div>
+                    <p>{{ this.text }}</p>
+                </div>
+    
+                <div class="row">
+                    <button onclick="actOnPost(event);"
+                            data-post-id="{{ this.id }}">Like
+                    </button>
+                    <span id="likes-count-{{ this.id }}">{{ this.likes_count }}</span>
+                </div>
+            </div>
+        {{/each}}
+    
+    </div>
+    <script>
+        var updatePostStats = {
+            Like: function (postId) {
+                document.querySelector('#likes-count-' + postId).textContent++;
+            },
+            Unlike: function(postId) {
+                document.querySelector('#likes-count-' + postId).textContent--;
+            }
+        };
+    
+        var toggleButtonText = {
+            Like: function(button) {
+                button.textContent = "Unlike";
+            },
+            Unlike: function(button) {
+                button.textContent = "Like";
+            }
+        };
+    
+        var actOnPost = function (event) {
+            var postId = event.target.dataset.postId;
+            var action = event.target.textContent.trim();
+            toggleButtonText[action](event.target);
+            updatePostStats[action](postId);
+            axios.post('/posts/' + postId + '/act', { action: action });
+        };
+    </script>
+    </body>
+    </html>
